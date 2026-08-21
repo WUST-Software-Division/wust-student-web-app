@@ -83,6 +83,16 @@ export default function Header() {
 
   return (
     <>
+      <div className={styles.campusBar} aria-label="Campus websites">
+        <div className={`container ${styles.campusBarInner}`}>
+          <span>Washington University of Science and Technology</span>
+          <nav aria-label="Campus websites">
+            <a href="https://www.wust.edu/" target="_blank" rel="noreferrer">Main Campus</a>
+            <a href="https://global.wust.edu/" target="_blank" rel="noreferrer">Global Campus</a>
+            <a href="https://la.wust.edu/" target="_blank" rel="noreferrer">LA Campus</a>
+          </nav>
+        </div>
+      </div>
         <header className={`${styles.siteHeader}${scrolled ? ` ${styles.scrolled}` : ""}${forumNavigationActive ? ` ${styles.forumHidden}` : ""}`}>
         <div className={`container ${styles.headerInner}`}>
           <div className={styles.brandRow}>

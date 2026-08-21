@@ -10,6 +10,7 @@ export type ForumReply = {
 export type DiscussionPost = {
   id: number;
   space: Exclude<ForumSpace, "Rules & Terms">;
+  community?: string;
   category: string;
   title: string;
   author: string;
@@ -19,6 +20,12 @@ export type DiscussionPost = {
   image?: string;
   attachment?: string;
   replies: ForumReply[];
+};
+
+export const forumCommunities: Record<Exclude<ForumSpace, "Rules & Terms">, string[]> = {
+  Group: ["Data Analytics Study Circle", "International Student Network", "Weekend Wellness Group"],
+  Club: ["Photography Club", "Innovation & Technology Club", "Cultural Exchange Club"],
+  Organization: ["Student Government Association", "Graduate Business Network", "WUST Volunteer Council"],
 };
 
 export const forumSpaces: { label: ForumSpace; id: string; description: string }[] = [

@@ -1,7 +1,7 @@
 "use client";
 
 import { ChangeEvent, FormEvent, useEffect, useMemo, useRef, useState } from "react";
-import { discussionPosts, forumRules, forumSpaces, type DiscussionPost, type ForumSpace } from "../../../data/discussion";
+import { discussionPosts, forumCommunities, forumRules, forumSpaces, type DiscussionPost, type ForumSpace } from "../../../data/discussion";
 
 type DraftAttachment = { name: string; type: string; preview?: string };
 
@@ -10,6 +10,7 @@ const initials = (name: string) => name.split(" ").slice(0, 2).map((part) => par
 export default function DiscussionForum() {
   const [posts, setPosts] = useState(discussionPosts);
   const [space, setSpace] = useState<ForumSpace>("Group");
+  const [community, setCommunity] = useState(forumCommunities.Group[0]);
   const [query, setQuery] = useState("");
   const [composer, setComposer] = useState(false);
   const [signedIn, setSignedIn] = useState(false);
@@ -61,6 +62,7 @@ export default function DiscussionForum() {
 
   const selectSpace = (next: ForumSpace, id: string) => {
     setSpace(next);
+    if (next !== "Rules & Terms") setCommunity(forumCommunities[next][0]);
     window.history.replaceState(null, "", `#${id}`);
     document.getElementById("forum")?.scrollIntoView({ behavior: "smooth", block: "start" });
   };
@@ -75,7 +77,7 @@ export default function DiscussionForum() {
     event.preventDefault();
     if (!title.trim() || !body.trim() || space === "Rules & Terms") return;
     const post: DiscussionPost = {
-      id: Date.now(), space, category: `${space} post`, title: title.trim(), body: body.trim(), author: signedIn ? "Student" : "Guest Student", time: "Just now", likes: 0,
+      id: Date.now(), space, community, category: `${space} post`, title: title.trim(), body: body.trim(), author: signedIn ? "Student" : "Guest Student", time: "Just now", likes: 0,
       image: attachment?.preview, attachment: attachment && !attachment.preview ? attachment.name : undefined, replies: [],
     };
     setPosts((current) => [post, ...current]);
@@ -127,7 +129,7 @@ export default function DiscussionForum() {
           {space === "Rules & Terms" ? <div className="forum-rules">{forumRules.map((rule, index) => <article key={rule.title}><span>0{index + 1}</span><h3>{rule.title}</h3><p>{rule.description}</p></article>)}</div> : <>
             <div className="forum-tools"><label className="forum-search"><span>⌕</span><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder={`Search ${space.toLowerCase()} posts`} /></label><div><button className="active">Latest</button><button>Popular</button><button onClick={() => setSaved([])}>Saved {saved.length ? `(${saved.length})` : ""}</button></div></div>
             {composer && <form className="forum-composer" onSubmit={createPost}>
-              <div className="avatar">{signedIn ? "WS" : "GS"}</div><div className="forum-composer__fields"><input value={title} onChange={(event) => setTitle(event.target.value)} placeholder="Post title" aria-label="Post title" /><textarea value={body} onChange={(event) => setBody(event.target.value)} placeholder={`Share something with the ${space.toLowerCase()} community…`} rows={4} />
+              <div className="avatar">{signedIn ? "WS" : "GS"}</div><div className="forum-composer__fields"><div className="composer-scope"><label>Post to<select value={space} onChange={(event) => selectSpace(event.target.value as ForumSpace, forumSpaces.find((item) => item.label === event.target.value)?.id || "groups")}><option value="Group">Group</option><option value="Club">Club</option><option value="Organization">Organization</option></select></label><label>{space} community<select value={community} onChange={(event) => setCommunity(event.target.value)}>{forumCommunities[space as Exclude<ForumSpace, "Rules & Terms">].map((item) => <option key={item} value={item}>{item}</option>)}</select></label></div><input value={title} onChange={(event) => setTitle(event.target.value)} placeholder="Post title" aria-label="Post title" /><textarea value={body} onChange={(event) => setBody(event.target.value)} placeholder={`Share something with the ${space.toLowerCase()} community…`} rows={4} />
               {attachment && <div className="attachment-preview">{attachment.preview ? <img src={attachment.preview} alt="Selected upload preview" /> : <span>▧</span>}<strong>{attachment.name}</strong><button type="button" onClick={() => setAttachment(null)}>Remove</button></div>}
               <div className="composer-actions"><label className="attachment-button">＋ Add media or file<input type="file" accept="image/*,.pdf,.doc,.docx,.ppt,.pptx,.txt" onChange={handleAttachment} /></label><span>Images, PDF, DOC, PPT or TXT</span><button type="button" onClick={() => setComposer(false)}>Cancel</button><button className="button button--dark" type="submit">Publish post</button></div></div>
             </form>}
@@ -136,7 +138,7 @@ export default function DiscussionForum() {
               {filtered.map((post) => {
                 const repliesOpen = openReplies.includes(post.id);
                 return <article className="forum-post" key={post.id}>
-                  <header><div className="avatar">{initials(post.author)}</div><div><strong>{post.author}</strong><span>{post.category} · {post.time}</span></div><button aria-label="More post options">•••</button></header>
+                  <header><div className="avatar">{initials(post.author)}</div><div><strong>{post.author}</strong><span>{post.category}{post.community ? ` · ${post.community}` : ""} · {post.time}</span></div><button aria-label="More post options">•••</button></header>
                   <div className="forum-post__content"><h3>{post.title}</h3><p>{post.body}</p>{post.image && <img className="forum-post__media" src={post.image} alt="Media shared with this post" />}{post.attachment && <div className="post-file"><span>PDF</span><strong>{post.attachment}</strong><button>Download</button></div>}</div>
                   <footer><button className={liked.includes(post.id) ? "active" : ""} onClick={() => setLiked((current) => current.includes(post.id) ? current.filter((id) => id !== post.id) : [...current, post.id])}>♡ {post.likes + (liked.includes(post.id) ? 1 : 0)}</button><button onClick={() => setOpenReplies((current) => current.includes(post.id) ? current.filter((id) => id !== post.id) : [...current, post.id])}>▢ {post.replies.length} replies</button><button className={saved.includes(post.id) ? "active" : ""} onClick={() => setSaved((current) => current.includes(post.id) ? current.filter((id) => id !== post.id) : [...current, post.id])}>⌑ {saved.includes(post.id) ? "Saved" : "Save"}</button></footer>
                   {repliesOpen && <div className="reply-thread">{post.replies.map((reply) => <div className="forum-reply" key={reply.id}><div className="avatar">{initials(reply.author)}</div><div><strong>{reply.author}</strong><small>{reply.time}</small><p>{reply.body}</p></div></div>)}<div className="reply-composer"><div className="avatar">{signedIn ? "WS" : "GS"}</div><textarea rows={2} value={replyDrafts[post.id] || ""} onChange={(event) => setReplyDrafts((current) => ({ ...current, [post.id]: event.target.value }))} placeholder="Write a reply…" /><button onClick={() => addReply(post.id)}>Reply</button></div></div>}
