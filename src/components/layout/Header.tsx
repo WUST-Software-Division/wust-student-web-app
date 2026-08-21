@@ -3,11 +3,18 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
+import { Building2, ChevronDown, GraduationCap, Users, UsersRound } from "lucide-react";
 import { navigation } from "../../config/nav";
 import styles from "./Header.module.css";
 
 const ENTER_COMPACT_AT = 96; // px scrolled before the header shrinks
 const EXIT_COMPACT_AT = 24; // must scroll back above this before it expands again
+
+const communityIcons = {
+  Groups: Users,
+  Clubs: GraduationCap,
+  Organizations: Building2,
+} as const;
 
 export default function Header() {
   const pathname = usePathname();
@@ -62,14 +69,18 @@ export default function Header() {
         >
           <div className={styles.dropdownTrigger}>
             <Link href={item.href} className={pathname === item.href ? styles.active : ""} onClick={() => setOpen(false)}>{item.label}</Link>
-            <button aria-label="Toggle Community menu" aria-expanded={communityOpen} onClick={() => setCommunityOpen(!communityOpen)}>⌄</button>
+            <button aria-label="Toggle Community menu" aria-expanded={communityOpen} onClick={() => setCommunityOpen(!communityOpen)}>
+              <UsersRound size={15} strokeWidth={2.2} aria-hidden="true" />
+              <ChevronDown size={13} strokeWidth={2.2} aria-hidden="true" />
+            </button>
           </div>
           <div className={`${styles.dropdownMenu}${communityOpen ? ` ${styles.isOpen}` : ""}`} aria-label="Community directory">
             <div className={styles.dropdownHeading}><span>Explore community</span><small>Find your place here</small></div>
             <div className={styles.dropdownCards}>
             {item.children.map((child) => (
               <Link key={child.label} href={child.href} onClick={() => { setOpen(false); setCommunityOpen(false); }}>
-                <span>{child.initials}</span><span><strong>{child.label}</strong><small>{child.description}</small><em>{child.count} <b>→</b></em></span>
+                {(() => { const Icon = communityIcons[child.label as keyof typeof communityIcons]; return <span><Icon size={18} strokeWidth={2} aria-hidden="true" /></span>; })()}
+                <span><strong>{child.label}</strong><small>{child.description}</small><em>{child.count} <b>→</b></em></span>
               </Link>
             ))}
             </div>

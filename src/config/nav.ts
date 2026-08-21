@@ -10,6 +10,7 @@ export const navigation: readonly NavigationItem[] = [
   { label: "Activity", href: "/activity" },
   { label: "Success", href: "/success" },
   { label: "Career", href: "/career" },
+  { label: "Alumni", href: "/alumni" },
   {
     label: "Community",
     href: "/organization",
@@ -19,5 +20,4 @@ export const navigation: readonly NavigationItem[] = [
       { label: "Organizations", href: "/organizations", description: "Recognized student organizations, leadership, and campus initiatives.", initials: "OR", count: "9 organizations" },
     ],
   },
-  { label: "Alumni", href: "/alumni" },
 ] as const;
